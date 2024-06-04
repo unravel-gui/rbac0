@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.komorebi.rbac0.mapper.PermissionMapper">
+
+    <resultMap id="BaseResultMap" type="com.komorebi.rbac0.model.Permission">
+            <id property="pid" column="pid" jdbcType="INTEGER"/>
+            <result property="method" column="method" jdbcType="VARCHAR"/>
+            <result property="router" column="router" jdbcType="VARCHAR"/>
+            <result property="name" column="name" jdbcType="VARCHAR"/>
+            <result property="description" column="description" jdbcType="VARCHAR"/>
+            <result property="createAt" column="create_at" jdbcType="TIMESTAMP"/>
+            <result property="updateAt" column="update_at" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        pid,method,router,
+        name,description,create_at,
+        update_at
+    </sql>
+    <!-- 定义 upsert 方法 -->
+    <update id="upsert">
+        INSERT INTO j_permission (method, router, name, description, create_at, update_at)
+        VALUES (#{p.method}, #{p.router}, #{p.name}, #{p.description}, #{p.createAt}, #{p.updateAt})
+        ON DUPLICATE KEY UPDATE
+                             name = VALUES(name),
+                             description = VALUES(description),
+                             create_at = VALUES(create_at),
+                             update_at = VALUES(update_at);
+    </update>
+    <select id="getPermissionByPtype" resultType="com.komorebi.rbac0.model.Permission">
+        SELECT *
+        FROM j_permission
+                 RIGHT JOIN j_ptype_permission jpp on j_permission.pid = jpp.pid
+        WHERE jpp.tid=#{tid};
+    </select>
+</mapper>

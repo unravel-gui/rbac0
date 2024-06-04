@@ -1,0 +1,24 @@
+package com.komorebi.rbac0.mapper;
+
+import com.komorebi.rbac0.model.Role;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
+
+/**
+* @author HP
+* @description 针对表【j_role】的数据库操作Mapper
+* @createDate 2024-06-01 15:37:39
+* @Entity com.komorebi.rbac0.model.Role
+*/
+@Mapper
+public interface RoleMapper extends BaseMapper<Role> {
+
+    List<Role> getRoleByUser(@Param("uid") Integer uid);
+}
+
+
+
+

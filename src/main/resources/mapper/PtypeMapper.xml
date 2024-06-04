@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.komorebi.rbac0.mapper.PtypeMapper">
+
+    <resultMap id="BaseResultMap" type="com.komorebi.rbac0.model.Ptype">
+            <id property="tid" column="tid" jdbcType="INTEGER"/>
+            <result property="name" column="name" jdbcType="VARCHAR"/>
+            <result property="description" column="description" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        tid,name,description
+    </sql>
+    <select id="getPtypeByRole" resultType="com.komorebi.rbac0.model.Ptype">
+        SELECT *
+        FROM j_ptype
+                 RIGHT JOIN j_role_ptype jrp ON j_ptype.tid=jrp.tid
+        WHERE jrp.rid=#{rid}
+    </select>
+</mapper>

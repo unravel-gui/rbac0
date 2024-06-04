@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.komorebi.rbac0.mapper.UserMapper">
+
+    <resultMap id="BaseResultMap" type="com.komorebi.rbac0.model.User">
+            <id property="uid" column="uid" jdbcType="INTEGER"/>
+            <result property="openId" column="open_id" jdbcType="INTEGER"/>
+            <result property="username" column="username" jdbcType="VARCHAR"/>
+            <result property="password" column="password" jdbcType="VARCHAR"/>
+            <result property="isActivce" column="is_activce" jdbcType="BIT"/>
+            <result property="updateAt" column="update_at" jdbcType="TIMESTAMP"/>
+            <result property="createAt" column="create_at" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        uid,open_id,username,
+        password,is_activce,update_at,
+        create_at
+    </sql>
+    <select id="getUserByRole" resultType="com.komorebi.rbac0.model.User">
+        SELECT *
+        FROM j_user
+                 RIGHT JOIN j_user_role jur on j_user.uid = jur.uid
+        WHERE jur.rid=#{rid};
+    </select>
+</mapper>
