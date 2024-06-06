@@ -44,6 +44,9 @@ public class IndexController {
             if (!res){
                 return Result.fail("register failed");
             }
+            // TODO:注册成功后分配默认的普通用户角色
+
+            // 搓返回值
             UserLoginOrRegisterResp ur = getUserLoginOrRegisterResp(req.getUsername());
             return Result.success(ur);
         } catch (Exception e) {
