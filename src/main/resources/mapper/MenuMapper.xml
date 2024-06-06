@@ -30,4 +30,20 @@
                  RIGHT JOIN j_ptype_menu jpm on j_menu.mid = jpm.mid
         WHERE jpm.tid=#{tid};
     </select>
+    <select id="getMenuByUid" resultType="com.komorebi.rbac0.model.Menu">
+        SELECT *
+        FROM j_menu
+        WHERE j_menu.mid IN (
+            SELECT jpm.mid
+            FROM j_ptype_menu AS jpm
+                     INNER JOIN j_role_ptype jrt
+                                ON jrt.tid=jpm.tid
+            WHERE jrt.rid IN (
+                SELECT rid
+                FROM j_user
+                         INNER JOIN j_user_role jur
+                                    ON j_user.uid=jur.uid
+                WHERE j_user.uid=#{uid})
+        )
+    </select>
 </mapper>

@@ -1,17 +1,26 @@
 package com.komorebi.rbac0.controller;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.komorebi.rbac0.common.Common;
 import com.komorebi.rbac0.common.utils.HashUtils;
 import com.komorebi.rbac0.common.utils.JWTUtils;
 import com.komorebi.rbac0.common.utils.Result;
 import com.komorebi.rbac0.model.DTO.*;
+import com.komorebi.rbac0.model.Menu;
+import com.komorebi.rbac0.model.Permission;
 import com.komorebi.rbac0.model.User;
+import com.komorebi.rbac0.service.MenuService;
 import com.komorebi.rbac0.service.UserRoleService;
 import com.komorebi.rbac0.service.UserService;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.models.auth.In;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -22,24 +31,26 @@ public class UserController {
     private UserService userService;
     @Autowired
     private UserRoleService userRoleService;
+    @Autowired
+    private MenuService menuService;
 
-    @ApiOperation(value = "管理员登录",notes = "管理员登录的描述")
-    @PostMapping("/login")
-    public Result adminLogin(@RequestBody UserLogin req) {
-        // 调用 service 层的方法将 user 对象插入到数据库中
-        try{
-            // 处理密码
-            req.password=HashUtils.sha256(req.password);
-            Boolean isLogin = userService.checkLogin(req.username,req.password);
-            if (!isLogin) {
-                return Result.fail("username or password wrong");
-            }
-            UserLoginOrRegisterResp ur = getUserLoginOrRegisterResp(req.username);
-            return Result.success(ur);
-        } catch (Exception e) {
-            return Result.fail(e);
-        }
-    }
+//    @ApiOperation(value = "管理员登录",notes = "管理员登录的描述")
+//    @PostMapping("/login")
+//    public Result adminLogin(@RequestBody UserLogin req) {
+//        // 调用 service 层的方法将 user 对象插入到数据库中
+//        try{
+//            // 处理密码
+//            req.password=HashUtils.sha256(req.password);
+//            Boolean isLogin = userService.checkLogin(req.username,req.password);
+//            if (!isLogin) {
+//                return Result.fail("username or password wrong");
+//            }
+//            UserLoginOrRegisterResp ur = getUserLoginOrRegisterResp(req.username);
+//            return Result.success(ur);
+//        } catch (Exception e) {
+//            return Result.fail(e);
+//        }
+//    }
 
     @ApiOperation(value = "添加用户",notes = "添加用户的描述")
     @PutMapping("/putUser")
@@ -121,12 +132,14 @@ public class UserController {
     }
 
     @ApiOperation(value = "获得所有用户",notes = "获得所有用户的描述")
-    @GetMapping("/allUser")
-    public Result<List<User>> getAllUser() {
+    @PostMapping("/allUser")
+    public Result<PageInfo> getAllUser(@RequestBody UserQuery req) {
         // 调用 service 层的方法将 user 对象插入到数据库中
         try{
-            List<User> users = userService.list();
-            return Result.success(users);
+            PageHelper.startPage(req.page_num, req.page_size);
+            List<User> users = userService.queryUser(req);
+            PageInfo<User> pageInfo = new PageInfo<>(users);
+            return Result.success(pageInfo);
         } catch (Exception e) {
             return Result.fail(e);
         }
@@ -201,12 +214,104 @@ public class UserController {
     }
 
 
+    @ApiOperation(value = "普通用户获得用户信息",notes = "普通用户获得自己的信息")
+    @GetMapping("/info")
+    public Result<User> getUserInfo(@RequestAttribute(Common.CONTEXT_UID) Integer uid) {
+        // 调用 service 层的方法将 user 对象插入到数据库中
+        if (uid==null) {
+            return Result.fail("parse user failed from jwt");
+        }
+        try{
+            User user = userService.getById(uid);
+            user.setPassword(null);
+            return Result.success(user);
+        }catch (Exception e){
+            return Result.fail(e);
+        }
+    }
+
+    @ApiOperation(value = "普通用户修改信息",notes = "普通用户修改信息,存在水平鉴权")
+    @PostMapping("/info")
+    public Result modifyUserInfo(@RequestAttribute(Common.CONTEXT_UID) Integer uid,
+                                 @RequestBody User req) {
+        // 调用 service 层的方法将 user 对象插入到数据库中
+        if (req == null) {
+            return Result.fail("User对象不能为空");
+        }
+        if (uid!=req.getUid()) {
+            return Result.fail("禁止访问");
+        }
+        try {
+            // 根据 user 的 id 查询数据库中对应的用户
+            User existingUser = userService.getById(req.getUid());
+            if (existingUser == null) {
+                return Result.fail("要修改的用户不存在");
+            }
+            try{
+                // 更新数据库中的用户信息
+                req.setPassword(existingUser.getPassword());
+                req.setUpdateAt(LocalDateTime.now());
+                boolean success = userService.updateById(req);
+                if (success) {
+                    return Result.success("用户修改成功");
+                } else {
+                    return Result.fail("用户修改失败");
+                }
+            } catch (Exception e) {
+                return Result.fail(e);
+            }
+        } catch (Exception e) {
+            return Result.fail(e);
+        }
+    }
+
+    @ApiOperation(value = "用户注销",notes = "用户注销功能")
+    @DeleteMapping("/info")
+    public Result<Boolean> delUserByself(@RequestAttribute(Common.CONTEXT_UID) Integer uid) {
+        // 调用 service 层的方法将 user 对象插入到数据库中
+        if (uid==null) {
+            return Result.fail("parse user failed from jwt");
+        }
+        try{
+            List<Integer> ids = new ArrayList<>();
+            ids.add(uid);
+            boolean res =  userService.delUser(ids);
+            if (!res) {
+                return Result.success("no data delete");
+            }
+            // 删除用户与角色之间的联系
+            int resRows = userRoleService.delByUids(ids);
+            res = resRows>0;
+            return Result.success(res);
+        } catch (Exception e) {
+            return Result.fail(e);
+        }
+    }
+
+    @ApiOperation(value = "普通用户查询菜单",notes = "普通用户查询菜单，参数来自jwt解析")
+    @GetMapping("/menu")
+    public Result<List<Menu>> getUserMenu(@RequestAttribute(Common.CONTEXT_UID) Integer uid) {
+        // 调用 service 层的方法将 permission 对象插入到数据库中
+        if (uid == null) {
+            return Result.fail("User对象不能为空");
+        }
+        try{
+            List<Menu> menus = userService.getUserMenu(uid);
+            return Result.success(menus);
+        }catch (Exception e){
+            return Result.fail(e);
+        }
+    }
+
+
+
     public UserLoginOrRegisterResp getUserLoginOrRegisterResp(String username){
         User user = userService.getUserByUsername(username);
         user.setPassword(null);
         String uidStr = String.valueOf(user.getUid());
         String jwt_token = JWTUtils.generateToken(uidStr);
-        UserLoginOrRegisterResp ur = new UserLoginOrRegisterResp(user,jwt_token);
+        List<Menu> menus = menuService.getMenuByUid(user.getUid());
+        UserLoginOrRegisterResp ur = new UserLoginOrRegisterResp(user,jwt_token,menus);
         return ur;
     }
 }

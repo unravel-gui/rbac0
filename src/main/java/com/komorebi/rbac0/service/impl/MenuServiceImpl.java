@@ -44,6 +44,12 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu>
         int resRows = menuMapper.deleteBatchIds(mids);
         return resRows>0;
     }
+
+    @Override
+    public List<Menu> getMenuByUid(Integer uid) {
+        List<Menu> mList = menuMapper.getMenuByUid(uid);
+        return mList;
+    }
 }
 
 

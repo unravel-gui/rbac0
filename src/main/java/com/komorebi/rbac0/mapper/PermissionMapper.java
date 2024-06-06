@@ -2,6 +2,7 @@ package com.komorebi.rbac0.mapper;
 
 import com.komorebi.rbac0.model.Permission;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import io.swagger.models.auth.In;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -18,6 +19,18 @@ public interface PermissionMapper extends BaseMapper<Permission> {
 
     List<Permission> getPermissionByPtype(@Param("tid") Integer tid);
     Boolean upsert(@Param("p") Permission p);
+
+    List<Permission> getPermission4Visitor();
+    List<Permission> getPermissionByRolename(@Param("rolename") String rolename);
+    Integer countPermission4Visitor(@Param("httpMethod")String httpMethod,
+                                             @Param("router")String router);
+    Integer countPermissionByRolename(@Param("rolename") String rolename,
+                                              @Param("httpMethod")String httpMethod,@Param("router")String router);
+
+    List<Permission> getPermissionByUid(@Param("uid")Integer uid);
+
+    Integer countPermissionByUid(@Param("uid")Integer uid,
+                            @Param("httpMethod")String httpMethod, @Param("router")String router);
 }
 
 

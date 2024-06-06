@@ -81,8 +81,12 @@
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
-
-
+        <!--分页-->
+        <dependency>
+            <groupId>com.github.pagehelper</groupId>
+            <artifactId>pagehelper</artifactId>
+            <version>5.3.0</version>
+        </dependency>
         <!-- For JUnit -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>

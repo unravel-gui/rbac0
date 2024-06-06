@@ -1,15 +1,16 @@
 package com.komorebi.rbac0.common.utils;
 
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
+
+import javax.crypto.spec.SecretKeySpec;
+import java.security.Key;
 import java.util.Date;
-import javax.xml.bind.DatatypeConverter;
 
 public class JWTUtils {
     // 过期时间，单位毫秒
-    private static final int TIME_TO_LIVE_MS = 24*60 * 60 * 1000;
+    private static final int TIME_TO_LIVE_MS = 24 * 60 * 60 * 1000;
     // 密钥
-    private static final String SECRET_KEY = "your_secret_key";
+    private static final byte[] SECRET_KEY_BYTES = "Jin".getBytes(); // 替换为你自己的密钥
 
     public static String generateToken(String subject) {
         return Jwts.builder()
@@ -18,18 +19,20 @@ public class JWTUtils {
                 .setAudience("audience")
                 .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + TIME_TO_LIVE_MS))
-                .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
+                .signWith(SignatureAlgorithm.HS256,SECRET_KEY_BYTES)
                 .compact();
     }
 
-
-    public static void validateToken(String token) {
+    public static String validateToken(String token) throws ExpiredJwtException, UnsupportedJwtException, MalformedJwtException, SignatureException, IllegalArgumentException {
         try {
-            Jwts.parser().setSigningKey(SECRET_KEY)
-                    .parseClaimsJws(token);
-        } catch (Exception e) {
-            // Token 无效或已过期
-            System.out.println("Token validation failed: " + e.getMessage());
+            Key key = new SecretKeySpec(SECRET_KEY_BYTES, SignatureAlgorithm.HS256.getJcaName());
+            Claims claims = Jwts.parser()
+                    .setSigningKey(key)
+                    .parseClaimsJws(token)
+                    .getBody();
+            return claims.getSubject();
+        } catch (ExpiredJwtException | UnsupportedJwtException | MalformedJwtException | SignatureException | IllegalArgumentException e) {
+            throw e;
         }
     }
 }

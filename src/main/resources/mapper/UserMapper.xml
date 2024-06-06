@@ -6,7 +6,7 @@
 
     <resultMap id="BaseResultMap" type="com.komorebi.rbac0.model.User">
             <id property="uid" column="uid" jdbcType="INTEGER"/>
-            <result property="openId" column="open_id" jdbcType="INTEGER"/>
+            <result property="openId" column="open_id" jdbcType="VARCHAR"/>
             <result property="username" column="username" jdbcType="VARCHAR"/>
             <result property="password" column="password" jdbcType="VARCHAR"/>
             <result property="isActivce" column="is_activce" jdbcType="BIT"/>
@@ -25,4 +25,5 @@
                  RIGHT JOIN j_user_role jur on j_user.uid = jur.uid
         WHERE jur.rid=#{rid};
     </select>
+
 </mapper>

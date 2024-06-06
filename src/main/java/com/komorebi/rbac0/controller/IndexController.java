@@ -5,7 +5,9 @@ import com.komorebi.rbac0.common.utils.JWTUtils;
 import com.komorebi.rbac0.common.utils.Result;
 import com.komorebi.rbac0.model.DTO.UserLogin;
 import com.komorebi.rbac0.model.DTO.UserLoginOrRegisterResp;
+import com.komorebi.rbac0.model.Menu;
 import com.komorebi.rbac0.model.User;
+import com.komorebi.rbac0.service.MenuService;
 import com.komorebi.rbac0.service.PtypeMenuService;
 import com.komorebi.rbac0.service.UserService;
 import io.swagger.annotations.ApiOperation;
@@ -15,10 +17,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController()
 public class IndexController {
     @Autowired
     private UserService userService;
+    @Autowired
+    private MenuService menuService;
 
     @ApiOperation(value = "普通用户注册",notes = "普通用户注册的描述")
     @PostMapping("/register")
@@ -70,7 +76,8 @@ public class IndexController {
         user.setPassword(null);
         String uidStr = String.valueOf(user.getUid());
         String jwt_token = JWTUtils.generateToken(uidStr);
-        UserLoginOrRegisterResp ur = new UserLoginOrRegisterResp(user,jwt_token);
+        List<Menu> menus = menuService.getMenuByUid(user.getUid());
+        UserLoginOrRegisterResp ur = new UserLoginOrRegisterResp(user,jwt_token,menus);
         return ur;
     }
 }

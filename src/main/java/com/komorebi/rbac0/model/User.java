@@ -25,7 +25,7 @@ public class User implements Serializable {
     /**
      * 
      */
-    private Integer openId;
+    private String openId;
 
     /**
      * 

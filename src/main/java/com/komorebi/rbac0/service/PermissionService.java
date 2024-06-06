@@ -15,4 +15,11 @@ public interface PermissionService extends IService<Permission> {
 
     List<Permission> getPermissionByPtype(Integer tid);
 
+    Boolean checkPermission4Visitor(String httpMethod,String Router);
+    Boolean checkPermission4Role(String rolename,String httpMethod, String Router);
+    List<Permission> getPermission4Visitor();
+    List<Permission> getPermission4Role(String rolename);
+    Boolean checkPermission4User(Integer uid, String httpMethod,String router);
+
+    List<Permission> getPermission4User(Integer uid);
 }

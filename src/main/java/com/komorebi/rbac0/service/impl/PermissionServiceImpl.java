@@ -32,6 +32,36 @@ public class PermissionServiceImpl extends ServiceImpl<PermissionMapper, Permiss
     public List<Permission> getPermissionByPtype(Integer tid) {
         return permissionMapper.getPermissionByPtype(tid);
     }
+
+    @Override
+    public Boolean checkPermission4Visitor(String httpMethod, String Router) {
+        return permissionMapper.countPermission4Visitor(httpMethod,Router)>0;
+    }
+
+    @Override
+    public Boolean checkPermission4Role(String rolename,String httpMethod, String Router) {
+        return permissionMapper.countPermissionByRolename(rolename,httpMethod,Router)>0;
+    }
+
+    @Override
+    public List<Permission> getPermission4Visitor() {
+        return permissionMapper.getPermission4Visitor();
+    }
+
+    @Override
+    public List<Permission> getPermission4Role(String rolename) {
+        return permissionMapper.getPermissionByRolename(rolename);
+    }
+
+    @Override
+    public Boolean checkPermission4User(Integer uid, String httpMethod, String router) {
+        return permissionMapper.countPermissionByUid(uid,httpMethod,router)>0;
+    }
+
+    @Override
+    public List<Permission> getPermission4User(Integer uid) {
+        return permissionMapper.getPermissionByUid(uid);
+    }
 }
 
 

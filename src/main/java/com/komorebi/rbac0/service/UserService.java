@@ -1,5 +1,8 @@
 package com.komorebi.rbac0.service;
 
+import com.komorebi.rbac0.model.DTO.UserQuery;
+import com.komorebi.rbac0.model.Menu;
+import com.komorebi.rbac0.model.Permission;
 import com.komorebi.rbac0.model.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -24,4 +27,9 @@ public interface UserService extends IService<User> {
     List<User> getUserByRole(Integer rid);
 
     Boolean activeUser(Integer uid, Boolean b);
+
+    List<User> queryUser(UserQuery req);
+
+
+    List<Menu> getUserMenu(Integer uid);
 }

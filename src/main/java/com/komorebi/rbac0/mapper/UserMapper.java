@@ -1,5 +1,6 @@
 package com.komorebi.rbac0.mapper;
 
+import com.komorebi.rbac0.model.DTO.UserQuery;
 import com.komorebi.rbac0.model.User;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
@@ -17,6 +18,7 @@ import java.util.List;
 public interface UserMapper extends BaseMapper<User> {
 
     List<User> getUserByRole(@Param("rid") Integer rid);
+
 }
 
 
